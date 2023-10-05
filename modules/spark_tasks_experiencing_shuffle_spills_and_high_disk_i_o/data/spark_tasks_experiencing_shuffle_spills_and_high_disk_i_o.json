@@ -1,0 +1,134 @@
+{
+  "name": "spark_tasks_experiencing_shuffle_spills_and_high_disk_i_o",
+  "description": "This incident type typically occurs in distributed computing systems, where Spark tasks are experiencing high disk I/O and shuffle spills. Spark is a popular distributed computing engine that uses shuffle operations to move data between nodes in a cluster, which can sometimes result in performance issues due to spills. The spills occur when the data being shuffled exceeds the memory capacity allocated for the shuffle operations. This incident requires optimization of the shuffle operations to reduce spills and improve overall performance.",
+  "params": [
+    {
+      "name": "INTERVAL",
+      "value": ""
+    },
+    {
+      "name": "NEW_MEMORY_FRACTION_VALUE",
+      "value": ""
+    },
+    {
+      "name": "COUNT",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_SPARK_CONF",
+      "value": ""
+    },
+    {
+      "name": "CONFIGURATION_PARAMETER_TO_UPDATE",
+      "value": ""
+    },
+    {
+      "name": "APPLICATION_ID",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Spark tasks experiencing shuffle spills and high disk I/O.\nThis incident type typically occurs in distributed computing systems, where Spark tasks are experiencing high disk I/O and shuffle spills. Spark is a popular distributed computing engine that uses shuffle operations to move data between nodes in a cluster, which can sometimes result in performance issues due to spills. The spills occur when the data being shuffled exceeds the memory capacity allocated for the shuffle operations. This incident requires optimization of the shuffle operations to reduce spills and improve overall performance."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the disk I/O usage"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `iostat -x ${INTERVAL} ${COUNT}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the network bandwidth usage"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sar -n DEV ${INTERVAL} ${COUNT}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Spark task metrics"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `yarn logs -applicationId ${APPLICATION_ID} | grep \"TaskMetrics\" | grep \"ExecutorRunTime\"`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the shuffle size and spill metrics"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `yarn logs -applicationId ${APPLICATION_ID} | grep \"ShuffleMetrics\" | grep \"spilled\"`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the system resource usage"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `top`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Insufficient memory allocated for shuffle operations."
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_set_spark_shuffle_memory_fraction($PATH_TO_SPARK_CONF)"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the memory allocation for shuffle operations to avoid spills. This can be done by increasing the "
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_update_spark_conf($NEW_MEMORY_FRACTION_VALUE, $PATH_TO_SPARK_CONF, $CONFIGURATION_PARAMETER_TO_UPDATE)"
+    }
+  ]
+}
